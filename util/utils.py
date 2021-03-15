@@ -69,10 +69,10 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=5, is_incep
                     #   but in testing we only consider the final output.
                     if is_inception and phase == 'train':
                         # From https://discuss.pytorch.org/t/how-to-optimize-inception-model-with-auxiliary-classifiers/7958
-                        feature, logits = model(inputs)
+                        feature, logits, logits_domain = model(inputs)
                         loss = criterion(logits, labels)
                     else:
-                        feature, logits = model(inputs)
+                        feature, logits, logits_domain = model(inputs)
                         loss = criterion(logits, labels)
 
                     _, preds = torch.max(logits, 1)
