@@ -34,13 +34,20 @@ class SourceClassifier(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(self.f_dim, self.n_classes)
         )
+        self.domain_classifier = nn.Sequential(
+            nn.Linear(self.f_dim, int(self.f_dim/2)),
+            nn.ELU(),
+            nn.Linear(int(self.f_dim/2), 2)
+        )
+
 
     def forward(self, input_batch):
         h1 = self.ResNet50(input_batch)
         h1 = torch.flatten(h1, start_dim=1)  # size: (batch_size, dim)
         source_feature = self.sourceFeatureExtractor(h1)
         classification = self.classifier(source_feature)
-        return source_feature, classification
+        domain_classification = self.domain_classifier(source_feature)
+        return source_feature, classification,domain_classification
 
 
 if __name__ == "__main__":
