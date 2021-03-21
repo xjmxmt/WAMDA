@@ -48,6 +48,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=5, is_incep
                 model.train()  # Set model to training mode
             else:
                 model.eval()   # Set model to evaluate mode
+                val_size = 0
 
             running_loss = 0.0
             running_corrects = 0
@@ -86,17 +87,20 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=5, is_incep
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
 
-            epoch_loss = running_loss / len(dataloaders[phase].dataset)
-            epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+            if phase == 'train':
+                epoch_loss = running_loss / len(dataloaders[phase].dataset)
+                epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+            else:
+                epoch_loss = running_loss / val_size
+                epoch_acc = running_corrects.double() / val_size
+                print(running_corrects, val_size)
+                if epoch_acc > best_acc:
+                    # deep copy the model
+                    best_acc = epoch_acc
+                    best_model_wts = copy.deepcopy(model.state_dict())
+                val_acc_history.append(epoch_acc)
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
-
-            # deep copy the model
-            if phase == 'val' and epoch_acc > best_acc:
-                best_acc = epoch_acc
-                best_model_wts = copy.deepcopy(model.state_dict())
-            if phase == 'val':
-                val_acc_history.append(epoch_acc)
 
         print()
 
